@@ -17,13 +17,12 @@ public class UserCreationRequest {
         this.username = username;
     }
 
-
-    public String getLastName() {
-        return lastName;
+    public String getPassword() {
+        return password;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getFirstName() {
@@ -34,19 +33,19 @@ public class UserCreationRequest {
         this.firstName = firstName;
     }
 
-    public String getPassword() {
-        return password;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public LocalDate getBod() {
+    public LocalDate getDob() {
         return dob;
     }
 
-    public void setBod(LocalDate bod) {
-        this.dob = bod;
+    public void setDob(LocalDate dob) {
+        this.dob = dob;
     }
 }
