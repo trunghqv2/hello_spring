@@ -17,6 +17,8 @@ public class UserService {
 
     public User createRequest(UserCreationRequest request) {
         User user = new User();
+        if (userReposity.existsByUsername(request.getUsername()))
+            throw new RuntimeException("Username existed");
         user.setUsername(request.getUsername());
         user.setLastName(request.getLastName());
         user.setFirstName(request.getFirstName());
@@ -30,7 +32,7 @@ public class UserService {
     }
 
     public User updateUser(String userId, UserUpdateRequest request) {
-        User user = getUserById(userId);
+        User user = getUser(userId);
         user.setLastName(request.getLastName());
         user.setFirstName(request.getFirstName());
         user.setDob(request.getDob());
@@ -46,7 +48,7 @@ public class UserService {
         return userReposity.findAll();
     }
 
-    public User getUserById(String userId) {
+    public User getUser(String userId) {
         return userReposity.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

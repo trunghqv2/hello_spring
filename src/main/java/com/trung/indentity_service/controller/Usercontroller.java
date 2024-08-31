@@ -1,6 +1,7 @@
 package com.trung.indentity_service.controller;
 
 import com.trung.indentity_service.dto.request.UserUpdateRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class Usercontroller {
     private UserService userService;
 
     @PostMapping
-    User createUser(@RequestBody UserCreationRequest request) {
+    User createUser(@RequestBody @Valid UserCreationRequest request) {
         return userService.createRequest(request);
     }
 
@@ -29,7 +30,7 @@ public class Usercontroller {
 
     @GetMapping("/{userId}")
     User getUserById(@RequestParam("userId") String userId) {
-        return userService.getUserById(userId);
+        return userService.getUser(userId);
     }
 
     @PutMapping("/{userId}")
