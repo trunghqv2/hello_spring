@@ -1,54 +1,52 @@
 package com.trung.indentity_service.service;
 
+import com.trung.indentity_service.dto.request.UserCreationRequest;
 import com.trung.indentity_service.dto.request.UserUpdateRequest;
+import com.trung.indentity_service.entity.User;
+import com.trung.indentity_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.trung.indentity_service.dto.request.UserCreationRequest;
-import com.trung.indentity_service.entity.User;
-import com.trung.indentity_service.repository.UserReposity;
 
 import java.util.List;
 
 @Service
 public class UserService {
     @Autowired
-    private UserReposity userReposity;
+    private UserRepository userRepository;
 
-    public User createRequest(UserCreationRequest request) {
+    public User createUser(UserCreationRequest request){
         User user = new User();
-        if (userReposity.existsByUsername(request.getUsername()))
-            throw new RuntimeException("Username existed");
-        user.setUsername(request.getUsername());
-        user.setLastName(request.getLastName());
-        user.setFirstName(request.getFirstName());
-        user.setDob(request.getDob());
-        user.setPassword(request.getPassword());
-        return userReposity.save(user);
-    }
 
-    public List<User> getUser() {
-        return userReposity.findAll();
+        user.setUsername(request.getUsername());
+        user.setPassword(request.getPassword());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setDob(request.getDob());
+
+        return userRepository.save(user);
     }
 
     public User updateUser(String userId, UserUpdateRequest request) {
         User user = getUser(userId);
-        user.setLastName(request.getLastName());
-        user.setFirstName(request.getFirstName());
-        user.setDob(request.getDob());
+
         user.setPassword(request.getPassword());
-        return userReposity.save(user);
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setDob(request.getDob());
+
+        return userRepository.save(user);
     }
 
-    public void deletUser(String userId) {
-        userReposity.deleteById(userId);
+    public void deleteUser(String userId){
+        userRepository.deleteById(userId);
     }
 
-    public List<User> getUsers() {
-        return userReposity.findAll();
+    public List<User> getUsers(){
+        return userRepository.findAll();
     }
 
-    public User getUser(String userId) {
-        return userReposity.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    public User getUser(String id){
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
