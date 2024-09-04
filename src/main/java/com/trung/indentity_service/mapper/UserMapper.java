@@ -1,5 +1,6 @@
 package com.trung.indentity_service.mapper;
 
+
 import com.trung.indentity_service.dto.request.UserCreationRequest;
 import com.trung.indentity_service.dto.request.UserUpdateRequest;
 import com.trung.indentity_service.dto.response.UserResponse;
@@ -12,8 +13,8 @@ import org.mapstruct.MappingTarget;
 public interface UserMapper {
     User toUser(UserCreationRequest request);
 
+    @Mapping(target = "username", ignore = true)
     UserResponse toUserResponse(User user);
 
-    @Mapping(target = "roles", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 }
