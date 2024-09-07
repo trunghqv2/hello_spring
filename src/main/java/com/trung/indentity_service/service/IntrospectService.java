@@ -2,16 +2,13 @@ package com.trung.indentity_service.service;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import com.trung.indentity_service.dto.request.AuthenticationRequest;
-import com.trung.indentity_service.dto.request.IntrospectRequest;
 import com.trung.indentity_service.dto.response.AuthenticationResponse;
-import com.trung.indentity_service.dto.response.IntrospectResponse;
 import com.trung.indentity_service.exception.AppException;
 import com.trung.indentity_service.exception.ErrorCode;
 import com.trung.indentity_service.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -22,8 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -32,23 +27,11 @@ import java.util.Date;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
-public class AuthenticationService {
+public class IntrospectService {
     UserRepository userRepository;
     @NonFinal
 //    @Value("${jwt.signerkey}")
     protected static final String SINGER_KEY ="CxaOVUc6AY6cYonUq4zKp5NMwPLo+2MXrNFCyfbb7jPeDCF2T67COm1uSb/GH2Ih";
-
-    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
-        var token = request.getToken();
-        JWSVerifier verifier = new MACVerifier(SINGER_KEY.getBytes());
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var verified = signedJWT.verify(verifier);
-        return IntrospectResponse.builder().
-                valid(verified && expityTime.after(new Date()))
-                .build();
-
-    }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername()).
