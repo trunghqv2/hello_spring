@@ -14,10 +14,11 @@ import com.trung.indentity_service.exception.ErrorCode;
 import com.trung.indentity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
+
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,8 @@ import java.util.Date;
 public class AuthenticationService {
     UserRepository userRepository;
     @NonFinal
-//    @Value("${jwt.signerkey}")
-    protected static final String SINGER_KEY ="CxaOVUc6AY6cYonUq4zKp5NMwPLo+2MXrNFCyfbb7jPeDCF2T67COm1uSb/GH2Ih";
+    @Value("${jwt.signerkey}")
+    protected String SINGER_KEY ;
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
@@ -55,11 +56,11 @@ public class AuthenticationService {
                 orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
-        boolean authenticated = passwordEncoder.matches(request.getPassword()
-                , user.getPassword());
+        boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
         if (!authenticated)
             throw new AppException(ErrorCode.UNAUTHENTICATED);
+
         var token = generateToken(request.getUsername());
         return AuthenticationResponse.builder()
                 .token(token)

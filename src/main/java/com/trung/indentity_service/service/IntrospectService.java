@@ -11,10 +11,11 @@ import com.trung.indentity_service.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
+
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,8 @@ import java.util.Date;
 public class IntrospectService {
     UserRepository userRepository;
     @NonFinal
-//    @Value("${jwt.signerkey}")
-    protected static final String SINGER_KEY ="CxaOVUc6AY6cYonUq4zKp5NMwPLo+2MXrNFCyfbb7jPeDCF2T67COm1uSb/GH2Ih";
+    @Value("${jwt.signerkey}")
+   protected  String SINGER_KEY ;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findByUsername(request.getUsername()).

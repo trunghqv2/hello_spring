@@ -1,6 +1,7 @@
 package com.trung.indentity_service.controller;
 
 
+import com.trung.indentity_service.dto.request.ApiResponse;
 import com.trung.indentity_service.dto.request.UserCreationRequest;
 import com.trung.indentity_service.dto.request.UserUpdateRequest;
 import com.trung.indentity_service.dto.response.UserResponse;
@@ -9,14 +10,16 @@ import com.trung.indentity_service.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController()
+@RequestMapping("/users")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RestController
-@RequestMapping("/users")
+@Slf4j
 public class UserController {
     UserService userService;
 
@@ -26,8 +29,10 @@ public class UserController {
     }
 
     @GetMapping
-    List<User> getUsers() {
-        return userService.getUsers();
+    ApiResponse<List<UserResponse>> getUsers() {
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getUsers())
+                .build();
     }
 
     @GetMapping("/{userId}")
