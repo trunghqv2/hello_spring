@@ -1,6 +1,5 @@
 package com.trung.indentity_service.controller;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nimbusds.jose.JOSEException;
 import com.trung.indentity_service.dto.request.ApiResponse;
 import com.trung.indentity_service.dto.request.AuthenticationRequest;
@@ -9,7 +8,6 @@ import com.trung.indentity_service.dto.request.UserCreationRequest;
 import com.trung.indentity_service.dto.response.AuthenticationResponse;
 import com.trung.indentity_service.dto.response.IntrospectResponse;
 import com.trung.indentity_service.dto.response.UserResponse;
-import com.trung.indentity_service.entity.User;
 import com.trung.indentity_service.service.AuthenticationService;
 import com.trung.indentity_service.service.UserService;
 import lombok.*;
@@ -30,8 +28,10 @@ public class AuthenticationController {
     UserService userService;
 
     @PostMapping("/register")
-    User register(@RequestBody UserCreationRequest request) {
-        return userService.createUser(request);
+    ApiResponse<UserResponse> register(@RequestBody UserCreationRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.createUser(request))
+                .build();
     };
 
     @PostMapping("/login")
