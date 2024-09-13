@@ -12,6 +12,7 @@ import com.trung.indentity_service.service.AuthenticationService;
 import com.trung.indentity_service.service.UserService;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,15 +24,17 @@ import java.text.ParseException;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Log4j2
 public class AuthenticationController {
     AuthenticationService authenticationService;
     UserService userService;
 
     @PostMapping("/register")
     ApiResponse<UserResponse> register(@RequestBody UserCreationRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.createUser(request))
-                .build();
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+
+        apiResponse.setResult(userService.createUser(request));
+        return apiResponse;
     };
 
     @PostMapping("/login")
