@@ -4,8 +4,8 @@ import com.trung.indentity_service.dto.request.PremissionRequest;
 import com.trung.indentity_service.dto.response.PremissionResponse;
 import com.trung.indentity_service.dto.response.PremissiontResponse;
 import com.trung.indentity_service.entity.Premission;
-import com.trung.indentity_service.mapper.PremissionMapper;
-import com.trung.indentity_service.repository.PremissionRepository;
+import com.trung.indentity_service.mapper.PermissionMapper;
+import com.trung.indentity_service.repository.PermissionRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,22 +18,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
-public class PremissionService {
-    PremissionRepository premissionRepository;
-    PremissionMapper premissionMapper;
+public class PermissionService {
+    PermissionRepository permissionRepository;
+    PermissionMapper permissionMapper;
 
      public PremissionResponse create(PremissionRequest request) {
-        Premission premission = premissionMapper.toPremission(request);
-        premission = premissionRepository.save(premission);
-        return premissionMapper.toPremissionResponse(premission);
+        Premission premission = permissionMapper.toPermission(request);
+        premission = permissionRepository.save(premission);
+        return permissionMapper.toPremissionResponse(premission);
     }
 
     public List<PremissionResponse> getAll() {
-        var premissions = premissionRepository.findAll();
-        return premissions.stream().map(premissionMapper::toPremissionResponse);
+        var permissions = permissionRepository.findAll();
+        return permissions.stream().map(permissionMapper::toPremissionResponse).toList();
     }
 
     public  void delete(String premission) {
-        premissionRepository.deleteById(premission);
+        permissionRepository.deleteById(premission);
     }
 }

@@ -1,7 +1,6 @@
 package com.trung.indentity_service.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.trung.indentity_service.repository.PremissionRepository;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
