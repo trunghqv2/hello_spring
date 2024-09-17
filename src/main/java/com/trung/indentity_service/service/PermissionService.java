@@ -13,17 +13,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
 
     public PermissionResponse create(PermissionRequest request) {
         Permission permission = permissionMapper.toPermission(request);
-        permissionRepository.save(permission);
+        permission = permissionRepository.save(permission);
         return permissionMapper.toPermissionResponse(permission);
     }
 
@@ -32,7 +33,7 @@ public class PermissionService {
         return permissions.stream().map(permissionMapper::toPermissionResponse).toList();
     }
 
-    public  void  delete (String permission) {
+    public void delete(String permission) {
         permissionRepository.deleteById(permission);
     }
 }
