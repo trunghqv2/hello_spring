@@ -7,11 +7,14 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.trung.indentity_service.dto.request.AuthenticationRequest;
 import com.trung.indentity_service.dto.request.IntrospectRequest;
+import com.trung.indentity_service.dto.request.LogoutRequest;
 import com.trung.indentity_service.dto.response.AuthenticationResponse;
 import com.trung.indentity_service.dto.response.IntrospectResponse;
+import com.trung.indentity_service.entity.InvalidatedToken;
 import com.trung.indentity_service.entity.User;
 import com.trung.indentity_service.exception.AppException;
 import com.trung.indentity_service.exception.ErrorCode;
+import com.trung.indentity_service.repository.InvalidatedTokenRepository;
 import com.trung.indentity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,20 +40,23 @@ import java.util.StringJoiner;
 @Log4j2
 public class AuthenticationService {
     UserRepository userRepository;
+    InvalidatedTokenRepository invalidatedTokenRepository;
     @NonFinal
     @Value("${jwt.signerkey}")
     protected String SINGER_KEY;
 
+
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
-        JWSVerifier verifier = new MACVerifier(SINGER_KEY.getBytes());
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var verified = signedJWT.verify(verifier);
+        boolean isValid = true;
+        try {
+            verifyToken(token);
+        } catch (AppException e) {
+            isValid = false;
+        }
         return IntrospectResponse.builder().
-                valid(verified && expityTime.after(new Date()))
+                valid(isValid)
                 .build();
-
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -79,6 +86,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS)
                                 .toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
         Payload payload = new Payload(jwtclaimsSet.toJSONObject());
@@ -99,7 +107,7 @@ public class AuthenticationService {
 
         if (!CollectionUtils.isEmpty(user.getRoles()))
             user.getRoles().forEach(role -> {
-                        stringJoiner.add("ROLE_"+role.getName());
+                        stringJoiner.add("ROLE_" + role.getName());
                         if (!CollectionUtils.isEmpty(role.getPermissions()))
                             role.getPermissions()
                                     .forEach(permission -> stringJoiner.add(permission.getName()));
@@ -107,5 +115,33 @@ public class AuthenticationService {
             );
 
         return stringJoiner.toString();
+    }
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+        JWSVerifier verifier = new MACVerifier(SINGER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+        if(!(verified && expityTime.after(new Date())))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))throw new AppException(ErrorCode.UNAUTHENTICATED);
+        return signedJWT;
+    }
+
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signToken = verifyToken(request.getToken());
+        String jit = signToken.getJWTClaimsSet().getJWTID();
+        Date expityTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expityTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
     }
 }

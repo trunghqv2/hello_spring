@@ -1,10 +1,7 @@
 package com.trung.indentity_service.controller;
 
 import com.nimbusds.jose.JOSEException;
-import com.trung.indentity_service.dto.request.ApiResponse;
-import com.trung.indentity_service.dto.request.AuthenticationRequest;
-import com.trung.indentity_service.dto.request.IntrospectRequest;
-import com.trung.indentity_service.dto.request.UserCreationRequest;
+import com.trung.indentity_service.dto.request.*;
 import com.trung.indentity_service.dto.response.AuthenticationResponse;
 import com.trung.indentity_service.dto.response.IntrospectResponse;
 import com.trung.indentity_service.dto.response.UserResponse;
@@ -50,6 +47,12 @@ public class AuthenticationController {
         var result = authenticationService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
                 .result(result)
+                .build();
+    }
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        authenticationService.logout(request);
+        return ApiResponse.<Void>builder()
                 .build();
     }
 }
