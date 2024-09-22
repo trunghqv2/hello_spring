@@ -8,14 +8,12 @@ import com.trung.indentity_service.enums.Role;
 import com.trung.indentity_service.exception.AppException;
 import com.trung.indentity_service.exception.ErrorCode;
 import com.trung.indentity_service.mapper.UserMapper;
+import com.trung.indentity_service.repository.RoleRepository;
 import com.trung.indentity_service.repository.UserRepository;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +31,7 @@ public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    RoleRepository roleRepository;
 
     public UserResponse createUser(UserCreationRequest request) {
         log.info(request.getUsername());
@@ -44,19 +43,22 @@ public class UserService {
 
 //        user.setRoles(roles);
 
-        if(userRepository.existsByUsername(request.getUsername()))
+        if (userRepository.existsByUsername(request.getUsername()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    @PostAuthorize("returnObject.username == authentication.name")
+//    @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         userMapper.updateUser(user, request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
@@ -65,7 +67,7 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('APPROVE_POST')")
     public List<UserResponse> getUsers() {
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }

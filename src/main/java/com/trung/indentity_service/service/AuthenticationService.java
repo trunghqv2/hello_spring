@@ -38,7 +38,7 @@ public class AuthenticationService {
     UserRepository userRepository;
     @NonFinal
     @Value("${jwt.signerkey}")
-    protected String SINGER_KEY ;
+    protected String SINGER_KEY;
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
@@ -93,10 +93,19 @@ public class AuthenticationService {
             throw new RuntimeException(e);
         }
     }
+
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-//        if(!CollectionUtils.isEmpty(user.getRoles()))
-//            user.getRoles().forEach(stringJoiner::add);
+
+        if (!CollectionUtils.isEmpty(user.getRoles()))
+            user.getRoles().forEach(role -> {
+                        stringJoiner.add("ROLE_"+role.getName());
+                        if (!CollectionUtils.isEmpty(role.getPermissions()))
+                            role.getPermissions()
+                                    .forEach(permission -> stringJoiner.add(permission.getName()));
+                    }
+            );
+
         return stringJoiner.toString();
     }
 }
