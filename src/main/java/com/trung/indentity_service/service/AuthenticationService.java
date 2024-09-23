@@ -8,6 +8,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.trung.indentity_service.dto.request.AuthenticationRequest;
 import com.trung.indentity_service.dto.request.IntrospectRequest;
 import com.trung.indentity_service.dto.request.LogoutRequest;
+import com.trung.indentity_service.dto.request.RefreshRequest;
 import com.trung.indentity_service.dto.response.AuthenticationResponse;
 import com.trung.indentity_service.dto.response.IntrospectResponse;
 import com.trung.indentity_service.entity.InvalidatedToken;
@@ -125,10 +126,11 @@ public class AuthenticationService {
         Date expityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         var verified = signedJWT.verify(verifier);
-        if(!(verified && expityTime.after(new Date())))
+        if (!(verified && expityTime.after(new Date())))
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         return signedJWT;
     }
 
@@ -143,5 +145,26 @@ public class AuthenticationService {
                 .build();
 
         invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signJWT = verifyToken(request.getToken());
+        var jit = signJWT.getJWTClaimsSet().getJWTID();
+        var expityTime = signJWT.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expityTime)
+                .build();
+        invalidatedTokenRepository.save(invalidatedToken);
+        var username = signJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUsername(username).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        var token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 }
